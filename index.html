@@ -91,7 +91,7 @@
 				for(let j=0;j<dic.length;j++){
 					let i=dic.length-j-1
 					let li = document.createElement("li");
-					li.innerHTML = `币对 ${dic[i].symbol} 现价 ${dic[i].price} 入价${dic[i].in} 收益${(dic[i].price/dic[i].in).toFixed(3)}`;
+					li.innerHTML = `币对 ${dic[i].symbol} 现价 ${dic[i].price} 入价${dic[i].in} 收益${(dic[i].price/dic[i].in-1).toFixed(3)}`;
 					ol.append(li);
 				}
 			}
