@@ -7,7 +7,7 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   schedule:
     # * is a special character in YAML so you have to quote this string
-    - cron:  '10/60 11/6 * * *'
+    - cron:  '*/60 */6 * * *'
 
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
