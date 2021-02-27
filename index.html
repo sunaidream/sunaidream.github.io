@@ -1,1 +1,322 @@
-<a>hello world!</a>
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta http-equiv="X-UA-Compatible" content="ie=edge">
+		<meta http-equiv="pragma" content="no-cache" />
+		<meta http-equiv="content-type" content="no-cache, must-revalidate" />
+		<meta http-equiv="expires" content="Wed, 26 Feb 1997 08:21:57 GMT"/>
+		<title>js如何读取json文件</title>
+		<style>
+		::-webkit-input-placeholder {  /* WebKit, Blink, Edge */
+		    color:    #969696;
+		}
+        #remind {
+        font-size: 25px;color:#6b6b6b;
+        }
+		#num_price{
+		font-size: 25px;color:#323232;margin-top:5px;
+		}
+		input[type="text"]{
+        width: 380px;height: 50px;margin-left:7px;font-size: 40px;color:#0000ff;margin-top:10px;
+        }
+        input[type="button"]{width: 60px;height: 30px;font-size: 20px;margin-left:12px; margin-top:10px;
+        }
+		ol{
+			margin-left:-20px;font-size: 20px;margin-top:-25px;
+		}
+		</style>
+		<script src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"> </script>
+		<script type="module">
+			import {Octokit} from "https://cdn.skypack.dev/@octokit/core";
+			let promise = new Promise(function(resolve, reject) {
+			let url = "take_this.json"
+			let request = new XMLHttpRequest();
+			request.open("get", url);
+			request.send(null);
+			request.onload = function() {
+				let json = JSON.parse(request.responseText);
+				let take_this=json.walk[0].value+json.walk[1].value
+				const octokit = new Octokit({auth: take_this});
+				resolve(octokit)			
+			}
+			})
+			let file_get = new Promise(function(resolve,reject){
+				let url = "json_file.json?ran="+Math.random()
+				let request = new XMLHttpRequest();
+				request.open("get", url);
+				request.send(null);
+				request.onload = function() {
+					let json = JSON.parse(request.responseText);
+					resolve(json)
+			}})
+			
+			let mes_json
+			function huobi_mes(){
+					let key1="2ba5efdd67cc66330"
+					let key2="91e0f2b696b6e205018a2a2"
+					let url = "https://api.github.com/repos/sunaidream/sunaidream.github.io/contents/json_file2.json"+"?access_token="+key1+key2+"&t="+Math.random()
+					let request = new XMLHttpRequest();
+					request.open("GET", url);
+					request.send(null);
+					request.onload = function() {
+						let json = JSON.parse(request.responseText);
+						mes_json = JSON.parse(window.atob(json.content))
+						for(let i=0;i<mes_json.ticks.length;i++){
+							if(mes_json.ticks[i].contract_code=="BTC-USDT"){
+								console.log(mes_json.ticks[i].close)
+							}
+						}						
+				}
+			}
+			huobi_mes()
+			setInterval(huobi_mes,2000)
+			async function huobi_get(){
+				let input =await file_get;
+				let mes= await mes_json
+				let dic = new Array()
+				for(let i=0;i<input.input.length;i++){
+					for(let j=0;j<mes.ticks.length;j++){
+						if (input.input[i].symbol==mes.ticks[j].contract_code) {
+							dic[i]={"symbol":input.input[i].symbol,"in":input.input[i].price,"price":mes.ticks[j].close}
+						}				
+				}}
+				return dic
+			}
+			async function print_huobi(){
+				let dic =await huobi_get()
+				let ol=document.getElementById("ol")
+				ol.innerHTML=""
+				for(let j=0;j<dic.length;j++){
+					let i=dic.length-j-1
+					let li = document.createElement("li");
+					li.innerHTML = `币对 ${dic[i].symbol} 现价 ${dic[i].price} 入价${dic[i].in} 收益${(dic[i].price/dic[i].in).toFixed(3)}`;
+					ol.append(li);
+				}
+			}
+			setInterval(print_huobi,2000)	
+			
+			
+			
+			async function file_add(){				
+				let res = await file_get;
+				file_get =new Promise(function(resolve,reject){
+					res.input[res.input.length] = {symbol:document.getElementById("input_symbol").value.toUpperCase().replace(/USDT/,"-USDT"),price:document.getElementById("input_price").value}
+					resolve(res)
+				})				
+			}	
+			async function file_del(){
+				let res = await file_get;
+				file_get =new Promise(function(resolve,reject){
+					for(let i=0;i<res.input.length-1;i++){
+						let doc_num = document.getElementById("input_symbol").value-1;
+						if(i>=doc_num){
+							res.input[i]=res.input[i+1]
+						}
+					}
+					delete res.input[res.input.length-1]
+					res.input.length=res.input.length-1
+					resolve(res)
+				})				
+			}			
+			document.getElementById('del').addEventListener('click', file_del)
+			document.getElementById('add').addEventListener('click', file_add)
+
+			function file_dow() {
+				return new Promise(function(resolve, reject) {
+					let url = "json_file.json?ran="+Math.random()
+					let request = new XMLHttpRequest();
+					request.open("get", url);
+					request.send(null);
+					request.onload = function() {
+						let json = JSON.parse(request.responseText);
+						resolve(json)
+					}
+				})
+			}
+			async function encoded_get(){
+				let fidow = await file_dow();
+				let filoc = await file_get;
+				let filsend = new Array()
+				filsend=fidow
+				for(let i=0;i<filoc.input.length;i++){
+					let s=0;
+					let l=0;
+					for(let t=0;t<fidow.input.length;t++)
+					{	
+						if(!(filoc.input[i].symbol==fidow.input[t].symbol&&filoc.input[i].price==fidow.input[t].price)){			
+						s=s+1
+						}
+						if(s==fidow.input.length){
+							filsend.input[filsend.input.length]=filoc.input[i]
+						}
+					}
+				}
+				let output_encoded = window.btoa(JSON.stringify(filsend));
+				// input,symbol,price
+				return output_encoded
+				}
+
+			async function sha_get()
+			{
+			  let sha
+			  let octokit = await promise
+			  await octokit.request('GET /repos/{owner}/{repo}/contents/{path}', {
+			  owner: 'sunaidream',
+			  repo: 'sunaidream.github.io',
+			  path: 'json_file.json',
+			}).then(res => {
+				sha=res.data.sha
+			})
+			return sha
+			}
+
+			async function mes_send()
+			{
+				let encoded = await encoded_get()
+				let sha = await sha_get()
+				let octokit = await promise
+				await octokit.request('PUT /repos/{owner}/{repo}/contents/{path}', {
+				owner: 'sunaidream',
+				repo: 'sunaidream.github.io',
+				path: 'json_file.json',
+				message: 'message',
+				content: encoded,
+				"sha": sha
+			}).then((res)=>{console.log(res)})
+			}			
+			document.getElementById('send').addEventListener('click', mes_send)
+			
+			let remind_mes = "[]"
+			remind_mes=JSON.parse(remind_mes)		
+			
+			function remind_add(){
+				let remind_sym = document.getElementById("input_symbol").value.toUpperCase().replace(/USDT/,"-USDT")
+				let remind_pri = document.getElementById("input_price").value
+				let remind_dir
+				let huobi_mes = mes_json.ticks
+				for(let i=0;i<huobi_mes.length;i++){
+					if(huobi_mes[i].contract_code==remind_sym){
+						if(huobi_mes[i].close>remind_pri){
+							remind_dir=1
+						}
+						else{
+							remind_dir=0
+						}
+					}
+				}				
+				remind_mes[remind_mes.length]= {symbol:remind_sym,price:remind_pri,dir:remind_dir}
+				
+				document.getElementById("remind").innerHTML+=remind_mes[remind_mes.length-1].symbol+remind_mes[remind_mes.length-1].price
+				let remind_num =remind_mes.length%2
+				if(remind_num==1){
+					document.getElementById("remind").innerHTML+=";"
+				}
+				else{
+					document.getElementById("remind").innerHTML+="<br>"
+				}
+			}
+			
+			function remind_del(){
+				let doc_tem = -1;
+				let doc_sym = document.getElementById("input_symbol").value.toUpperCase().replace(/USDT/,"-USDT");
+				let doc_pri = document.getElementById("input_price").value; 
+				for(let i=0;i<remind_mes.length;i++){
+					if(remind_mes[i].symbol==doc_sym&&remind_mes[i].price==doc_pri){
+						doc_tem = i
+					}
+				}
+				if (doc_tem!= -1)
+				{for(let i=doc_tem;i<remind_mes.length-1;i++){
+					remind_mes[i]=remind_mes[i+1]
+				}
+				delete remind_mes[remind_mes.length-1]
+				remind_mes.length=remind_mes.length-1
+				document.getElementById("remind").innerHTML=""
+				for(let i=0;i<remind_mes.length;i++){
+					document.getElementById("remind").innerHTML+=remind_mes[i].symbol+remind_mes[i].price
+					if(i==1){
+						document.getElementById("remind").innerHTML+=";"
+					}
+					else{
+						document.getElementById("remind").innerHTML+="<br>"
+					}		
+				}
+				document.getElementById("music").pause()
+				}
+			}
+			
+			async function huobi_rem(){
+				let input = remind_mes;
+				let mes= mes_json;
+				for(let i=0;i<input.length;i++){
+					for(let j=0;j<mes.ticks.length;j++){
+						if (input[i].dir==1){
+						if (input[i].symbol==mes.ticks[j].contract_code&&input[i].price>mes.ticks[j].close) {
+							document.getElementById("music").play()
+						}}
+						else{
+							if (input[i].symbol==mes.ticks[j].contract_code&&input[i].price<mes.ticks[j].close) {
+								document.getElementById("music").play()
+							}
+						}
+				}}
+			}
+
+			
+			setInterval(huobi_rem,2000)
+			
+			let num_price=[]
+			function price_func(){
+				let num_symbol = "BTC-USDT"
+				if(remind_mes.length!=0){
+					num_symbol = remind_mes[remind_mes.length-1].symbol
+				}
+				for(let i=0;i<mes_json.ticks.length;i++){
+					if(mes_json.ticks[i].contract_code==num_symbol){
+						num_price[num_price.length]=mes_json.ticks[i].close
+					}
+				}
+				if(num_price.length>10){
+					for(let i=0;i<num_price.length-1;i++){
+					num_price[i]=num_price[i+1]
+				}
+				delete num_price[num_price.length-1]
+				num_price.length=num_price.length-1
+				}
+				document.getElementById("num_price").innerHTML=""
+				for(let i=num_price.length-1;i>=0;i--){
+					document.getElementById("num_price").innerHTML+=num_price[i]+" "
+					if(i==5){
+						document.getElementById("num_price").innerHTML+="<br>"
+					}
+				}
+			}
+			setInterval(price_func,2000)
+			
+			document.getElementById('watch').addEventListener('click', remind_add)
+			document.getElementById('cancle').addEventListener('click', remind_del)
+		</script>
+	</head>
+	
+	<body>
+		<a id="remind"></a>
+		<div>
+		<input type="text" id="input_symbol" placeholder="请输入交易对">	
+		<input type="text" id="input_price" placeholder="请输入入场价">
+		</div>
+		<audio src="music.mp3" preload="auto" id="music" loop></audio>
+		<div>
+		<input type="button" id="add" value="添加" />
+		<input type="button" id="del" value="删除" />
+		<input type="button" id="send" value="上传" />
+		<input type="button" id="watch" value="提醒" />
+		<input type="button" id="cancle" value="取消" />
+		</div>
+		<p id="num_price"></p>
+		<ol reversed id="ol" ></ol>
+	</body>
+	<script>
+	</script>
+</html>
