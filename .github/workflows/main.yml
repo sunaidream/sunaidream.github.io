@@ -3,11 +3,11 @@
 name: CI
 
 # Controls when the action will run. 
-on:
-  # Allows you to run this workflow manually from the Actions tab
-  schedule:
-    # * is a special character in YAML so you have to quote this string
-    - cron:  '*/60 */6 * * *'
+# on:
+#   # Allows you to run this workflow manually from the Actions tab
+#   schedule:
+#     # * is a special character in YAML so you have to quote this string
+#     - cron:  '*/60 */6 * * *'
 
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
